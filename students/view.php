@@ -1,49 +1,75 @@
 <?php
+
 require_once "../config/auth.php";
 require_once "../config/db.php";
 
-$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
-if ($id <= 0) {
-    header("Location: index.php");
-    exit;
+/*
+|--------------------------------------------------------------------------
+| Get Student ID
+|--------------------------------------------------------------------------
+*/
+
+$student_id = isset($_GET['id'])
+    ? (int) $_GET['id']
+    : 0;
+
+
+$student = null;
+
+
+/*
+|--------------------------------------------------------------------------
+| Get Student
+|--------------------------------------------------------------------------
+*/
+
+if ($student_id > 0) {
+
+    $stmt = $conn->prepare("
+        SELECT
+            students.*,
+            departments.name AS department_name
+
+        FROM students
+
+        LEFT JOIN departments
+            ON students.department_id = departments.id
+
+        WHERE students.id = ?
+
+        LIMIT 1
+    ");
+
+    $stmt->bind_param(
+        "i",
+        $student_id
+    );
+
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+
+        $student = $result->fetch_assoc();
+
+    }
+
+    $stmt->close();
 }
 
 
-$stmt = $conn->prepare("
-    SELECT
-        students.*,
-        departments.name AS department_name
+/*
+|--------------------------------------------------------------------------
+| Page Data
+|--------------------------------------------------------------------------
+*/
 
-    FROM students
-
-    LEFT JOIN departments
-        ON students.department_id = departments.id
-
-    WHERE students.id = ?
-");
-
-
-$stmt->bind_param("i", $id);
-
-$stmt->execute();
-
-$result = $stmt->get_result();
-
-
-if ($result->num_rows === 0) {
-
-    header("Location: index.php");
-
-    exit;
-}
-
-
-$student = $result->fetch_assoc();
-
-$stmt->close();
+$page_title = "Student Profile";
 
 ?>
+
 
 <?php include "../includes/header.php"; ?>
 
@@ -52,14 +78,22 @@ $stmt->close();
 
 <main class="main-content">
 
+
+    <!-- =========================================================
+         Topbar
+    ========================================================== -->
+
     <header class="topbar">
+
 
         <div>
 
-            <h1>Student Details</h1>
+            <h1>
+                Student Profile
+            </h1>
 
             <p>
-                View complete student information.
+                View detailed information about the student.
             </p>
 
         </div>
@@ -67,172 +101,667 @@ $stmt->close();
 
         <div class="profile">
 
+
             <div class="avatar">
                 A
             </div>
 
+
             <div>
-                <strong>Admin</strong>
-                <span>Administrator</span>
+
+                <strong>
+                    Admin
+                </strong>
+
+                <span>
+                    Administrator
+                </span>
+
             </div>
 
+
         </div>
+
 
     </header>
 
 
     <section class="dashboard-content">
 
-        <div class="profile-card">
+
+        <?php if (!$student): ?>
 
 
-            <div class="student-profile-header">
-
-                <div class="large-avatar">
-
-                    <?php
-                    echo strtoupper(
-                        substr(
-                            $student['name'],
-                            0,
-                            1
-                        )
-                    );
-                    ?>
-
-                </div>
+            <!-- =================================================
+                 Student Not Found
+            ================================================== -->
 
 
-                <div>
+            <div class="content-card">
 
-                    <h2>
-                        <?php
-                        echo htmlspecialchars(
-                            $student['name']
-                        );
-                        ?>
-                    </h2>
+
+                <div class="empty-state">
+
+
+                    <div class="empty-icon">
+                        🔍
+                    </div>
+
+
+                    <h3>
+                        Student Not Found
+                    </h3>
+
 
                     <p>
-                        <?php
-                        echo htmlspecialchars(
-                            $student['department_name']
-                            ?? 'Department not assigned'
-                        );
-                        ?>
+                        The requested student could not be found.
                     </p>
 
+
+                    <a
+                        href="index.php"
+                        class="btn btn-primary"
+                    >
+                        ← Back to Students
+                    </a>
+
+
                 </div>
+
 
             </div>
 
 
-            <div class="details-grid">
+        <?php else: ?>
 
 
-                <div class="detail-item">
+            <?php
 
-                    <span>Student ID</span>
+            /*
+            |--------------------------------------------------------------------------
+            | Student Photo
+            |--------------------------------------------------------------------------
+            */
 
-                    <strong>
-                        #<?php echo $student['id']; ?>
-                    </strong>
+            $has_photo =
+                !empty($student['photo']);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Student Initial
+            |--------------------------------------------------------------------------
+            */
+
+            $student_initial =
+                strtoupper(
+                    substr(
+                        trim($student['name']),
+                        0,
+                        1
+                    )
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Status
+            |--------------------------------------------------------------------------
+            */
+
+            $status =
+                $student['status'] ?? 'Active';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Admission Date
+            |--------------------------------------------------------------------------
+            */
+
+            $admission_date = '-';
+
+
+            if (
+                !empty(
+                    $student['admission_date']
+                )
+            ) {
+
+                $admission_date =
+                    date(
+                        'd M Y',
+                        strtotime(
+                            $student['admission_date']
+                        )
+                    );
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Date of Birth
+            |--------------------------------------------------------------------------
+            */
+
+            $dob = '-';
+
+
+            if (
+                !empty(
+                    $student['dob']
+                )
+            ) {
+
+                $dob =
+                    date(
+                        'd M Y',
+                        strtotime(
+                            $student['dob']
+                        )
+                    );
+
+            }
+
+            ?>
+
+
+            <!-- =================================================
+                 Profile Header
+            ================================================== -->
+
+
+            <div class="student-profile-card">
+
+
+                <div class="student-profile-main">
+
+
+                    <!-- Photo -->
+
+
+                    <div class="student-profile-photo">
+
+
+                        <?php if ($has_photo): ?>
+
+
+                            <img
+                                src="../uploads/students/<?php echo htmlspecialchars($student['photo']); ?>"
+                                alt="<?php echo htmlspecialchars($student['name']); ?>"
+                            >
+
+
+                        <?php else: ?>
+
+
+                            <span>
+                                <?php echo htmlspecialchars(
+                                    $student_initial
+                                ); ?>
+                            </span>
+
+
+                        <?php endif; ?>
+
+
+                    </div>
+
+
+                    <!-- Basic Information -->
+
+
+                    <div class="student-profile-info">
+
+
+                        <h2>
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['name']
+                            );
+
+                            ?>
+
+                        </h2>
+
+
+                        <p class="student-profile-id">
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['student_id']
+                                ?? 'N/A'
+                            );
+
+                            ?>
+
+                        </p>
+
+
+                        <p class="student-profile-department">
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['department_name']
+                                ?? 'Not Assigned'
+                            );
+
+                            ?>
+
+                        </p>
+
+
+                        <span
+                            class="status-badge
+                            <?php
+                            echo strtolower(
+                                $status
+                            );
+                            ?>"
+                        >
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $status
+                            );
+
+                            ?>
+
+                        </span>
+
+
+                    </div>
+
 
                 </div>
 
 
-                <div class="detail-item">
+                <!-- Actions -->
 
-                    <span>Email Address</span>
 
-                    <strong>
-                        <?php
-                        echo htmlspecialchars(
-                            $student['email']
-                        );
-                        ?>
-                    </strong>
+                <div class="student-profile-actions">
+
+
+                    <a
+                        href="edit.php?id=<?php echo $student['id']; ?>"
+                        class="btn btn-primary"
+                    >
+                        Edit Student
+                    </a>
+
 
                 </div>
 
 
-                <div class="detail-item">
+            </div>
 
-                    <span>Phone Number</span>
 
-                    <strong>
-                        <?php
-                        echo htmlspecialchars(
-                            $student['phone'] ?: '-'
-                        );
-                        ?>
-                    </strong>
+            <!-- =================================================
+                 Personal Information
+            ================================================== -->
+
+
+            <div class="content-card profile-section">
+
+
+                <div class="card-header">
+
+
+                    <div>
+
+                        <h2>
+                            Personal Information
+                        </h2>
+
+                        <p>
+                            Student's personal contact information.
+                        </p>
+
+                    </div>
+
 
                 </div>
 
 
-                <div class="detail-item">
+                <div class="profile-info-grid">
 
-                    <span>Date of Birth</span>
 
-                    <strong>
-                        <?php
-                        echo $student['dob']
-                            ? date(
-                                'd M Y',
-                                strtotime($student['dob'])
+                    <!-- Email -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Email Address
+                        </span>
+
+
+                        <strong>
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['email']
+                            );
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                    <!-- Phone -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Phone Number
+                        </span>
+
+
+                        <strong>
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['phone']
+                                ?: '-'
+                            );
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                    <!-- Gender -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Gender
+                        </span>
+
+
+                        <strong>
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['gender']
+                                ?: '-'
+                            );
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                    <!-- DOB -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Date of Birth
+                        </span>
+
+
+                        <strong>
+
+                            <?php
+
+                            echo $dob;
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 Academic Information
+            ================================================== -->
+
+
+            <div class="content-card profile-section">
+
+
+                <div class="card-header">
+
+
+                    <div>
+
+                        <h2>
+                            Academic Information
+                        </h2>
+
+                        <p>
+                            Student's academic details.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="profile-info-grid">
+
+
+                    <!-- Student ID -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Student ID
+                        </span>
+
+
+                        <strong class="profile-student-id">
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['student_id']
+                                ?? 'N/A'
+                            );
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                    <!-- Department -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Department
+                        </span>
+
+
+                        <strong>
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $student['department_name']
+                                ?? 'Not Assigned'
+                            );
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                    <!-- Admission Date -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Admission Date
+                        </span>
+
+
+                        <strong>
+
+                            <?php
+
+                            echo $admission_date;
+
+                            ?>
+
+                        </strong>
+
+
+                    </div>
+
+
+                    <!-- Status -->
+
+
+                    <div class="profile-info-item">
+
+
+                        <span>
+                            Current Status
+                        </span>
+
+
+                        <strong>
+
+                            <span
+                                class="status-badge
+                                <?php
+                                echo strtolower(
+                                    $status
+                                );
+                                ?>"
+                            >
+
+                                <?php
+
+                                echo htmlspecialchars(
+                                    $status
+                                );
+
+                                ?>
+
+                            </span>
+
+                        </strong>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 Address
+            ================================================== -->
+
+
+            <div class="content-card profile-section">
+
+
+                <div class="card-header">
+
+
+                    <div>
+
+                        <h2>
+                            Address
+                        </h2>
+
+                        <p>
+                            Student's current address.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="profile-address">
+
+
+                    <?php if (
+                        !empty(
+                            trim(
+                                $student['address']
+                                ?? ''
                             )
-                            : '-';
-                        ?>
-                    </strong>
-
-                </div>
+                        )
+                    ): ?>
 
 
-                <div class="detail-item">
-
-                    <span>Gender</span>
-
-                    <strong>
                         <?php
-                        echo htmlspecialchars(
-                            $student['gender'] ?: '-'
-                        );
-                        ?>
-                    </strong>
 
-                </div>
-
-
-                <div class="detail-item">
-
-                    <span>Department</span>
-
-                    <strong>
-                        <?php
-                        echo htmlspecialchars(
-                            $student['department_name']
-                            ?? 'Not Assigned'
-                        );
-                        ?>
-                    </strong>
-
-                </div>
-
-
-                <div class="detail-item full-width">
-
-                    <span>Address</span>
-
-                    <strong>
-                        <?php
                         echo nl2br(
                             htmlspecialchars(
-                                $student['address'] ?: '-'
+                                $student['address']
                             )
                         );
+
                         ?>
-                    </strong>
+
+
+                    <?php else: ?>
+
+
+                        <span>
+                            No address information available.
+                        </span>
+
+
+                    <?php endif; ?>
+
 
                 </div>
 
@@ -240,13 +769,19 @@ $stmt->close();
             </div>
 
 
-            <div class="profile-actions">
+            <!-- =================================================
+                 Bottom Actions
+            ================================================== -->
+
+
+            <div class="profile-bottom-actions">
+
 
                 <a
                     href="index.php"
                     class="btn btn-secondary"
                 >
-                    Back to Students
+                    ← Back to Students
                 </a>
 
 
@@ -257,12 +792,15 @@ $stmt->close();
                     Edit Student
                 </a>
 
+
             </div>
 
 
-        </div>
+        <?php endif; ?>
+
 
     </section>
+
 
 </main>
 

@@ -104,20 +104,22 @@ $types = "";
 if ($search !== '') {
 
     $where[] = "
-        (
-            students.name LIKE ?
-            OR students.email LIKE ?
-            OR students.phone LIKE ?
-        )
-    ";
+    (
+        students.student_id LIKE ?
+        OR students.name LIKE ?
+        OR students.email LIKE ?
+        OR students.phone LIKE ?
+    )
+";
 
-    $search_value = "%{$search}%";
+$search_value = "%{$search}%";
 
-    $params[] = $search_value;
-    $params[] = $search_value;
-    $params[] = $search_value;
+$params[] = $search_value;
+$params[] = $search_value;
+$params[] = $search_value;
+$params[] = $search_value;
 
-    $types .= "sss";
+$types .= "ssss";
 }
 
 
@@ -351,9 +353,61 @@ $result = $stmt->get_result();
                     </h2>
 
                     <p>
-                        <?php echo $total_students; ?>
-                        student(s) found
-                    </p>
+
+    <?php echo $total_students; ?>
+
+    <?php echo $total_students == 1 ? 'student' : 'students'; ?>
+
+    found
+
+    <?php if ($department_id > 0): ?>
+
+        <?php
+        $selected_department_name = '';
+
+        $department_name_stmt = $conn->prepare("
+            SELECT name
+            FROM departments
+            WHERE id = ?
+            LIMIT 1
+        ");
+
+        $department_name_stmt->bind_param(
+            "i",
+            $department_id
+        );
+
+        $department_name_stmt->execute();
+
+        $department_name_result =
+            $department_name_stmt->get_result();
+
+        if ($department_name_result->num_rows > 0) {
+
+            $selected_department =
+                $department_name_result->fetch_assoc();
+
+            $selected_department_name =
+                $selected_department['name'];
+
+        }
+
+        $department_name_stmt->close();
+        ?>
+
+        in
+
+        <strong>
+            <?php
+            echo htmlspecialchars(
+                $selected_department_name
+            );
+            ?>
+        </strong>
+
+    <?php endif; ?>
+
+</p>
 
                 </div>
 
@@ -508,13 +562,20 @@ $result = $stmt->get_result();
 
                                     <td>
 
-                                        #<?php
-                                        echo $student['id'];
-                                        ?>
+    <strong class="student-id">
 
-                                    </td>
+        <?php
 
+        echo htmlspecialchars(
+            $student['student_id']
+            ?? 'N/A'
+        );
 
+        ?>
+
+    </strong>
+
+</td>
                                     <td>
 
                                         <div class="student-info">
@@ -627,14 +688,7 @@ $result = $stmt->get_result();
                                             </a>
 
 
-                                            <a
-                                                href="edit.php?id=<?php echo $student['id']; ?>"
-                                                class="action-btn edit"
-                                            >
-                                                Edit
-                                            </a>
-
-
+                                            
                                             <a
                                                 href="delete.php?id=<?php echo $student['id']; ?>"
                                                 class="action-btn delete"
