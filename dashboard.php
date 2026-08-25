@@ -95,7 +95,26 @@ if ($total_departments_result) {
         (int) $total_departments_result->fetch_assoc()['total'];
 
 }
+/*
+|--------------------------------------------------------------------------
+| Total Courses
+|--------------------------------------------------------------------------
+*/
 
+$total_courses_result = $conn->query("
+    SELECT COUNT(*) AS total
+    FROM courses
+");
+
+$total_courses = 0;
+
+if ($total_courses_result) {
+
+    $total_courses =
+        (int) $total_courses_result
+        ->fetch_assoc()['total'];
+
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -316,6 +335,29 @@ $recent_students = $conn->query("
 
 
             </div>
+<!-- Total Courses -->
+
+<div class="stat-card">
+
+    <div class="stat-icon blue">
+
+        📚
+
+    </div>
+
+    <div>
+
+        <span>
+            Total Courses
+        </span>
+
+        <h2>
+            <?php echo $total_courses; ?>
+        </h2>
+
+    </div>
+
+</div>
 
 
             <!-- Active Students -->
@@ -377,8 +419,39 @@ $recent_students = $conn->query("
 
 
         </div>
+<?php
+
+$pending_reset_count = 0;
+
+$result = $conn->query("
+    SELECT COUNT(*) AS total
+    FROM password_reset_requests
+    WHERE status = 'pending'
+");
+
+if ($result) {
+    $row = $result->fetch_assoc();
+    $pending_reset_count = $row["total"];
+}
+
+?>
 
 
+<div class="stat-card">
+
+    <h3>
+        Password Reset Requests
+    </h3>
+
+    <div class="stat-number">
+        <?= $pending_reset_count ?>
+    </div>
+
+    <a href="admin_reset_requests.php">
+        View Requests
+    </a>
+
+</div>
         <!-- =====================================================
              Students By Department
         ====================================================== -->

@@ -175,7 +175,33 @@ $admin_initial = strtoupper(
 
         </a>
 
+<!-- Courses -->
 
+<a
+    href="/student_management/courses/index.php"
+    class="nav-item
+    <?php
+
+    if (
+        $current_folder === 'courses'
+    ) {
+
+        echo 'active';
+
+    }
+
+    ?>"
+>
+
+    <span class="nav-icon">
+        📚
+    </span>
+
+    <span class="nav-label">
+        Courses
+    </span>
+
+</a>
     </nav>
 
 
