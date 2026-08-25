@@ -4,6 +4,40 @@ require_once "../config/auth.php";
 require_once "../config/db.php";
 
 
+$success_message = "";
+$error_message = "";
+
+
+if (isset($_GET["success"])) {
+
+    if ($_GET["success"] === "course_created") {
+
+        $success_message = "Course created successfully.";
+
+    } elseif ($_GET["success"] === "course_updated") {
+
+        $success_message = "Course updated successfully.";
+
+    } elseif ($_GET["success"] === "course_deleted") {
+
+        $success_message = "Course deleted successfully.";
+
+    }
+
+}
+
+
+if (isset($_GET["error"])) {
+
+    if ($_GET["error"] === "delete_failed") {
+
+        $error_message = "Failed to delete course.";
+
+    }
+
+}
+
+
 /*
 |--------------------------------------------------------------------------
 | Get All Courses
@@ -30,6 +64,159 @@ $courses = $conn->query("
 
 <?php include "../includes/sidebar.php"; ?>
 
+
+
+<style>
+
+.success-popup {
+
+    position: fixed;
+
+    top: 25px;
+
+    right: 25px;
+
+    min-width: 320px;
+
+    max-width: 420px;
+
+    background: #ffffff;
+
+    border-left: 5px solid #22c55e;
+
+    border-radius: 10px;
+
+    padding: 16px 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.15);
+
+    z-index: 9999;
+
+    animation:
+        popupSlideIn 0.3s ease;
+}
+
+
+.popup-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    border-radius: 50%;
+
+    background: #dcfce7;
+
+    color: #16a34a;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    flex-shrink: 0;
+}
+
+
+.popup-content {
+
+    flex: 1;
+}
+
+
+.popup-content strong {
+
+    display: block;
+
+    font-size: 15px;
+
+    margin-bottom: 3px;
+
+}
+
+
+.popup-content p {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    color: #666;
+}
+
+
+.popup-close {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 22px;
+
+    color: #999;
+
+    cursor: pointer;
+
+    padding: 0;
+}
+
+
+.popup-close:hover {
+
+    color: #222;
+
+}
+
+
+.error-popup {
+
+    border-left-color: #ef4444;
+}
+
+
+.error-popup .popup-icon {
+
+    background: #fee2e2;
+
+    color: #dc2626;
+}
+
+
+@keyframes popupSlideIn {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateX(30px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateX(0);
+
+    }
+
+}
+
+</style>
 
 <main class="main-content">
 
@@ -77,7 +264,70 @@ $courses = $conn->query("
 
 
     <section class="dashboard-content">
+<?php if ($success_message): ?>
 
+    <div class="success-popup" id="successPopup">
+
+        <div class="popup-icon">
+            ✓
+        </div>
+
+        <div class="popup-content">
+
+            <strong>
+                Success
+            </strong>
+
+            <p>
+                <?= htmlspecialchars($success_message) ?>
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="popup-close"
+            onclick="closeSuccessPopup()"
+        >
+            ×
+        </button>
+
+    </div>
+
+<?php endif; ?>
+
+
+<?php if ($error_message): ?>
+
+    <div class="success-popup error-popup" id="successPopup">
+
+        <div class="popup-icon">
+            !
+        </div>
+
+        <div class="popup-content">
+
+            <strong>
+                Error
+            </strong>
+
+            <p>
+                <?= htmlspecialchars($error_message) ?>
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="popup-close"
+            onclick="closeSuccessPopup()"
+        >
+            ×
+        </button>
+
+    </div>
+
+<?php endif; ?>
 
         <!-- =====================================================
              Course List
@@ -347,3 +597,25 @@ $courses = $conn->query("
 
 
 <?php include "../includes/footer.php"; ?>
+
+<script>
+
+function closeSuccessPopup() {
+
+    const popup =
+        document.getElementById("successPopup");
+
+    if (popup) {
+
+        popup.remove();
+
+    }
+
+
+setTimeout(function () {
+
+    closeSuccessPopup();
+
+}, 4000);
+
+</script>

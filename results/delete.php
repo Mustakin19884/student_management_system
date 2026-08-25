@@ -6,18 +6,18 @@ require_once "../config/db.php";
 
 /*
 |--------------------------------------------------------------------------
-| Get Course ID
+| Get Result ID
 |--------------------------------------------------------------------------
 */
 
-$course_id = isset($_GET["id"])
+$id = isset($_GET["id"])
     ? (int) $_GET["id"]
     : 0;
 
 
-if ($course_id <= 0) {
+if ($id <= 0) {
 
-    header("Location: index.php");
+    header("Location: index.php?error=delete_failed");
     exit;
 
 }
@@ -25,13 +25,13 @@ if ($course_id <= 0) {
 
 /*
 |--------------------------------------------------------------------------
-| Check Course Exists
+| Check Result Exists
 |--------------------------------------------------------------------------
 */
 
 $stmt = $conn->prepare("
     SELECT id
-    FROM courses
+    FROM results
     WHERE id = ?
     LIMIT 1
 ");
@@ -39,15 +39,13 @@ $stmt = $conn->prepare("
 
 if (!$stmt) {
 
-    die("Database query failed: " . $conn->error);
+    header("Location: index.php?error=delete_failed");
+    exit;
 
 }
 
 
-$stmt->bind_param(
-    "i",
-    $course_id
-);
+$stmt->bind_param("i", $id);
 
 $stmt->execute();
 
@@ -58,7 +56,7 @@ $stmt->close();
 
 if ($result->num_rows !== 1) {
 
-    header("Location: index.php");
+    header("Location: index.php?error=delete_failed");
     exit;
 
 }
@@ -66,35 +64,33 @@ if ($result->num_rows !== 1) {
 
 /*
 |--------------------------------------------------------------------------
-| Delete Course
+| Delete Result
 |--------------------------------------------------------------------------
 */
 
-$stmt = $conn->prepare("
-    DELETE FROM courses
+$delete_stmt = $conn->prepare("
+    DELETE FROM results
     WHERE id = ?
 ");
 
 
-if (!$stmt) {
+if (!$delete_stmt) {
 
-    die("Database query failed: " . $conn->error);
+    header("Location: index.php?error=delete_failed");
+    exit;
 
 }
 
 
-$stmt->bind_param(
-    "i",
-    $course_id
-);
+$delete_stmt->bind_param("i", $id);
 
 
-if ($stmt->execute()) {
+if ($delete_stmt->execute()) {
 
-    $stmt->close();
+    $delete_stmt->close();
 
     header(
-        "Location: index.php?success=course_deleted"
+        "Location: index.php?success=result_deleted"
     );
 
     exit;
@@ -102,7 +98,7 @@ if ($stmt->execute()) {
 }
 
 
-$stmt->close();
+$delete_stmt->close();
 
 
 header(

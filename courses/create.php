@@ -330,6 +330,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         style="
                             display: block;
                             margin-bottom: 8px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                             font-weight: 600;
                         "
                     >
@@ -355,6 +357,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             border: 1px solid #ddd;
                             border-radius: 8px;
                             font-size: 15px;
+                            margin-bottom: 8px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                         "
                     >
 
@@ -375,6 +380,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             display: block;
                             margin-bottom: 8px;
                             font-weight: 600;
+                            margin-bottom: 8px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                         "
                     >
                         Course Name
@@ -399,6 +407,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             border: 1px solid #ddd;
                             border-radius: 8px;
                             font-size: 15px;
+                            margin-bottom: 8px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                         "
                     >
 
@@ -419,6 +430,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             display: block;
                             margin-bottom: 8px;
                             font-weight: 600;
+                            margin-bottom: 8px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                         "
                     >
                         Credit
@@ -445,6 +459,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             border: 1px solid #ddd;
                             border-radius: 8px;
                             font-size: 15px;
+                            margin-bottom: 8px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                         "
                     >
 
@@ -457,6 +474,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     style="
                         display: flex;
                         gap: 10px;
+                        margin-bottom: 18px;
+                            margin-left: 20px;
+                            margin-top: 20px;
                     "
                 >
 

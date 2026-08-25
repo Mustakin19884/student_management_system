@@ -202,6 +202,63 @@ $admin_initial = strtoupper(
     </span>
 
 </a>
+
+
+<!-- Course Assignment -->
+
+<a
+    href="/student_management/student_courses/index.php"
+    class="nav-item
+    <?php
+
+    if (
+        $current_folder === 'student_courses'
+    ) {
+
+        echo 'active';
+
+    }
+
+    ?>"
+>
+
+    <span class="nav-icon">
+        📝
+    </span>
+
+    <span class="nav-label">
+        Course Assignment
+    </span>
+
+</a>
+
+<!-- Results -->
+
+<a
+    href="/student_management/results/index.php"
+    class="nav-item
+    <?php
+
+    if (
+        $current_folder === 'results'
+    ) {
+
+        echo 'active';
+
+    }
+
+    ?>"
+>
+
+    <span class="nav-icon">
+        📊
+    </span>
+
+    <span class="nav-label">
+        Results
+    </span>
+
+</a>
     </nav>
 
 
